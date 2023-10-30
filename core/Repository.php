@@ -12,30 +12,34 @@ class Repository
     private $language;
     private $created_at;
 
-    //
     public function __construct($base_url)
     {
         $this->api_url = $base_url;
     }
-    public function fetchPopularRepositories($date = null, $per_page = null, $language = null)
+    public function fetchPopularRepositories($creation_date = null, $stars = null, $per_page = null, $language = null)
     {
-        $this->api_url = $this->api_url . "?q=";
-        if ($date) {
-            $this->api_url = $this->api_url . "created:>$date";}
-        if ($language) {
-            $this->api_url .= "+language:$language";
+        $query_params = [];
+        if (!empty($language)) {
+            $query_params[] = "language:$language";
         }
-        if ($per_page) {
-            $this->api_url .= "+per_page:$per_page";
+        if (!empty($creation_date)) {
+            $query_params[] = "created:>=$creation_date";
         }
-        $this->api_url .= "&sort=stars&order=desc";
+        if (!empty($stars)) {
+            $query_params[] = "stars:>$stars";
+        }
+        $query = http_build_query([
+            'q' => implode(' ', $query_params),
+            'sort' => 'stars',
+            'order' => 'desc',
+            'per_page' => $per_page,
+        ]);
         $context = stream_context_create([
             "http" => [
                 "header" => "User-Agent: myTask", // Replace with your app name or identifier
             ],
         ]);
-
-        $response = file_get_contents($this->api_url, false, $context);
+        $response = file_get_contents("$this->api_url?$query", false, $context);
         $data = json_decode($response, true);
         $repositories = $data['items'];
         return $repositories;
@@ -87,7 +91,6 @@ class Repository
     public function getUrl()
     {
         return $this->url;
-
     }
     public function getLanguage()
     {

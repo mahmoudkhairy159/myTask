@@ -3,7 +3,7 @@
 include_once '../core/initialize.php';
 
 $base_url = 'https://api.github.com/repositories';
-$repository_id = '170355508';
+$repository_id = isset($_GET['repository_id']) ? $_GET['repository_id'] : '170355508';
 $repository = new Repository($base_url);
 $repository->fetchOneRepository($repository_id);
 
